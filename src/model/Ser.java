@@ -38,12 +38,16 @@ public class Ser {
 		if (edad == 18) {
 			if (factorDeDesarrollo < 55) {
 				// aqui lo mato
-				edad = (int) (esperanzaVida + 1);
+				matar();
 			}
 			this.estado = Estado.adulto;
 		} else if (edad == 65) {
 			this.estado = Estado.anciano;
 		}
+	}
+
+	private void matar() {
+		edad = (int) (esperanzaVida + 1);
 	};
 
 	private void cobrar(int cantidad) {
