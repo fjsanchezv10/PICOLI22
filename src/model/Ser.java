@@ -16,9 +16,9 @@ public class Ser {
 		super();
 		this.esperanzaVida = this.calculaEsperanzaVida(vidaMin, vidaMax);
 	}
-	
+
 	public Ser(int vida) {
-		this.esperanzaVida=vida;
+		this.esperanzaVida = vida;
 	}
 
 	public boolean vivir(int cantidad) {
@@ -47,48 +47,68 @@ public class Ser {
 	};
 
 	private void cobrar(int cantidad) {
-		if (this.estado == Estado.menor||this.estado==Estado.anciano) {
+		if (this.estado == Estado.menor || this.estado == Estado.anciano) {
 			this.alimentar(cantidad);
 		} else if (this.estado == Estado.adulto) {
-			int sobrante=cantidad-necesidadVital;
-			if(sobrante>=0) {
-				this.alimentar(cantidad);
-				this.ahorros+=sobrante;
-			}else {
-				this.ahorros+=sobrante;
-				//tengo ahorros suficientes
-				if(ahorros>=0) {
-					this.alimentar(cantidad);
-				}else {
-					this.alimentar(cantidad-(int)ahorros);
-					this.ahorros=0;
-				}
-			}
-			
-		} else if (this.estado == Estado.anciano) {
+			calcularCobroAdulto(cantidad);
+		}
+	}
 
+	private void calcularCobroAdulto(int cantidad) {
+		int sobrante = cantidad - necesidadVital;
+		if (sobrante >= 0) {
+			this.alimentar(cantidad);
+			this.ahorros += sobrante;
+		} else {
+			calcularAportacionAhorro(cantidad, sobrante);
+		}
+	}
+
+	private void calcularAportacionAhorro(int cantidad, int sobrante) {
+		this.ahorros += sobrante;
+		// tengo ahorros suficientes
+		if (ahorros >= 0) {
+			this.alimentar(cantidad);
+		} else {
+			this.alimentar(cantidad - (int) ahorros);
+			this.ahorros = 0;
 		}
 	}
 
 	private void alimentar(int cantidad) {
-		if (this.estado == Estado.menor) {
-			float porcentaje = (float) cantidad * 100 / this.necesidadVital;
-			this.factorDeDesarrollo += 5.5f * porcentaje / 100;
-		} else if (this.estado == Estado.adulto) {
-			float porcentaje = cantidad * 100 / this.necesidadVital;
-			if (porcentaje <= 99 && porcentaje >= 50) {
-				this.esperanzaVida -= 0.5f;
-			} else if (porcentaje <= 49) {
-				this.esperanzaVida -= 1;
-			}
-		} else if (this.estado == Estado.anciano) {
-			float porcentaje = cantidad * 100 / this.necesidadVital;
-			if (porcentaje <= 99 && porcentaje >= 30) {
-				this.esperanzaVida -= 1f;
-			} else if (porcentaje <= 29) {
-				this.esperanzaVida -= 2;
-			}
+		switch (this.estado) {
+		case menor:
+			alimentarMenor(cantidad);
+			break;
+		case adulto:
+			alimentarAdultos(cantidad);
+			break;
+		case anciano:
+			alimentarAnciano(cantidad);
+			break;
 		}
+	}
+
+	private void alimentarPersona(int cantidad, int porcenMax, int porcenMin, float periodoMin, float periodoMax) {
+		float porcentaje = cantidad * 100 / this.necesidadVital;
+		if (porcentaje <= porcenMax && porcentaje >= porcenMin) {
+			this.esperanzaVida -= periodoMin;
+		} else if (porcentaje <= periodoMin - 1) {
+			this.esperanzaVida -= periodoMax;
+		}
+	}
+
+	private void alimentarAnciano(int cantidad) {
+		alimentarPersona(cantidad, 99, 33, 1f, 2f);
+	}
+
+	private void alimentarAdultos(int cantidad) {
+		alimentarPersona(cantidad, 99, 50,0.5f, 1f);
+	}
+
+	private void alimentarMenor(int cantidad) {
+		float porcentaje = (float) cantidad * 100 / this.necesidadVital;
+		this.factorDeDesarrollo += 5.5f * porcentaje / 100;
 	};
 
 	private int calculaEsperanzaVida(int minimo, int maximo) {
